@@ -31,15 +31,23 @@ def sanitize(text):
 
 def get_download_url(soup) -> ArticlePair:
     # meta named citation_pdf_url
-    download_url = soup.find("meta", {"name": "citation_pdf_url"}).get("content")
+    download_url = None
 
-    return download_url
+    download_url_block = soup.find("meta", {"name": "citation_pdf_url"})
+
+    if download_url_block:
+        return download_url_block["content"]
+
+    return None
 
 
 def extract_articlepair(html_filepath):
     soup = BeautifulSoup(open(html_filepath, encoding="utf-8"), "html.parser")
 
     download_url = get_download_url(soup)
+
+    if not download_url:
+        print(f"Could not find download url for {html_filepath}")
 
     filename = os.path.basename(html_filepath)
 
