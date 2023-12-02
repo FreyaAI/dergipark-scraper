@@ -48,6 +48,7 @@ def extract_articlepair(html_filepath):
 
     if not download_url:
         print(f"Could not find download url for {html_filepath}")
+        return None
 
     filename = os.path.basename(html_filepath)
 
@@ -82,8 +83,12 @@ class DataProcessor:
         # Collect results and update progress bar
         temp_processed_articles = []
         for result in results:
-            articles = result.get()  # Wait for the result
-            temp_processed_articles.append(articles)
+            article_pair = result.get()  # Wait for the result
+
+            if not article_pair:
+                continue
+
+            temp_processed_articles.append(article_pair)
             pbar.update(1)  # Update progress bar
 
             if len(temp_processed_articles) >= batch_size:
