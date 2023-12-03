@@ -5,6 +5,7 @@ import argparse
 import mimetypes
 import unicodedata
 
+from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor
 
 from utility.request_tool import RequestTool
@@ -56,6 +57,7 @@ class URLDownloader:
             "image/jpeg": ".jpg",
             "image/png": ".png",
             "text/html": ".html",
+            "text/html; charset=UTF-8": ".html",
             "application/json": ".json",
             "image/tiff": ".tiff",
             "application/x-mobipocket-ebook": ".mobi",
@@ -78,8 +80,8 @@ class URLDownloader:
                     self.download_dir, f"{slugify(url)}{extension}"
                 )
 
-                with open(file_name, "w", encoding="utf-8") as file:
-                    file.write(response.text)
+                file = Path(file_name)
+                file.write_bytes(response.content)
 
                 print(f"Downloaded {url}")
                 self._update_progress()
