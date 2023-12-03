@@ -1,6 +1,7 @@
 import os
 import re
 import time
+import random
 import argparse
 import mimetypes
 import unicodedata
@@ -34,7 +35,13 @@ def slugify(value, allow_unicode=False):
 
 class URLDownloader:
     def __init__(
-        self, url_list, download_dir, max_workers=20, max_retries=3, retry_backoff=0.5
+        self,
+        url_list,
+        download_dir,
+        max_workers=20,
+        max_retries=3,
+        retry_backoff=0.5,
+        randomized_delay=True,
     ):
         self.url_list = url_list
         self.download_dir = download_dir
@@ -42,6 +49,7 @@ class URLDownloader:
         self.max_workers = max_workers
         self.max_retries = max_retries
         self.retry_backoff = retry_backoff
+        self.randomized_delay = randomized_delay
 
         self.total_urls = len(url_list)
         if not os.path.exists(download_dir):
@@ -68,8 +76,17 @@ class URLDownloader:
             content_type, mimetypes.guess_extension(content_type) or ".txt"
         )
 
-    def download_url(self, url, retry_count=0):
+    def download_url(
+        self,
+        url,
+        retry_count=0,
+        random_delay_min=0.1,
+        random_delay_max=0.69,
+    ):
         try:
+            if self.randomized_delay:
+                time.sleep(random.uniform(random_delay_min, random_delay_max))
+
             response = self.request_tool.get(url)
 
             if response.status_code == 200:
@@ -124,13 +141,14 @@ def main(args):
     MAX_WORKERS = args.max_workers
     MAX_RETRIES = args.max_retries
     RETRY_BACKOFF = args.retry_backoff
+    RANDOMIZED_DELAY = args.randomized_delay
 
     request_tool = RequestTool()
     request_tool.read_from_proxy_file(PROXY_FILE)
 
     url_list = read_url_list(URL_LIST_FILE)
     downloader = URLDownloader(
-        url_list, DOWNLOAD_DIR, MAX_WORKERS, MAX_RETRIES, RETRY_BACKOFF
+        url_list, DOWNLOAD_DIR, MAX_WORKERS, MAX_RETRIES, RETRY_BACKOFF, RETRY_BACKOFF
     )
     downloader.start_download()
 
@@ -179,6 +197,13 @@ def get_args():
         help="Retry backoff time in seconds",
         default=0.5,
     )
+    parser.add_argument(
+        "-rd",
+        "--randomized-delay",
+        action="store_true",
+        help="Add randomized delay between requests",
+    )
+
     return parser.parse_args()
 
 
