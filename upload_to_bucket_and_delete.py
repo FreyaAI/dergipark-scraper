@@ -44,13 +44,13 @@ def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "-b",
-        "--bucket-name",
+        "--bucket_name",
         type=str,
         required=True,
         help="Name of the GCS bucket to upload to.",
     )
     parser.add_argument(
-        "-s" "--source-folder",
+        "-s" "--source_folder",
         type=str,
         required=True,
         help="Path to the folder containing files to upload.",
