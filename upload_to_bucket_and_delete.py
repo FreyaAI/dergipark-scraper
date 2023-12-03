@@ -12,21 +12,25 @@ def upload_files(bucket_name, source_folder):
     bucket = client.bucket(bucket_name)
 
     for local_file in glob.glob(source_folder + "/**", recursive=True):
-        if os.path.isfile(local_file):
-            remote_path = os.path.join(
-                "destination_folder", local_file[1 + len(source_folder) :]
-            )
-            blob = bucket.blob(remote_path)
-            blob.upload_from_filename(local_file)
-            print(f"Uploaded {local_file} to {remote_path}")
+        try:
+            if os.path.isfile(local_file):
+                remote_path = os.path.join(
+                    "destination_folder", local_file[1 + len(source_folder) :]
+                )
+                blob = bucket.blob(remote_path)
+                blob.upload_from_filename(local_file)
+                print(f"Uploaded {local_file} to {remote_path}")
 
-            # Verify upload
-            if blob.exists():
-                print(f"Verification successful for {local_file}")
-                os.remove(local_file)
-                print(f"Deleted {local_file}")
-            else:
-                print(f"Verification failed for {local_file}, not deleted.")
+                # Verify upload
+                if blob.exists():
+                    print(f"Verification successful for {local_file}")
+                    os.remove(local_file)
+                    print(f"Deleted {local_file}")
+                else:
+                    print(f"Verification failed for {local_file}, not deleted.")
+        except Exception as e:
+            print(f"Error uploading {local_file}: {e}")
+            continue
 
 
 def main(args):
