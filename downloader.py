@@ -1,14 +1,13 @@
-from concurrent.futures import ThreadPoolExecutor
 import os
+import re
 import time
 import argparse
+import mimetypes
+import unicodedata
 
+from concurrent.futures import ThreadPoolExecutor
 
 from utility.request_tool import RequestTool
-
-
-import unicodedata
-import re
 
 
 def slugify(value, allow_unicode=False):
@@ -49,12 +48,35 @@ class URLDownloader:
 
         self.request_tool = RequestTool()
 
+    def _get_extension(self, content_type):
+        # Mapping for additional content types
+        extension_map = {
+            "application/pdf": ".pdf",
+            "application/epub+zip": ".epub",
+            "image/jpeg": ".jpg",
+            "image/png": ".png",
+            "text/html": ".html",
+            "application/json": ".json",
+            "image/tiff": ".tiff",
+            "application/x-mobipocket-ebook": ".mobi",
+            "image/vnd.djvu": ".djvu",
+            # Add more mappings as needed
+        }
+        return extension_map.get(
+            content_type, mimetypes.guess_extension(content_type) or ".txt"
+        )
+
     def download_url(self, url, retry_count=0):
         try:
             response = self.request_tool.get(url)
 
             if response.status_code == 200:
-                file_name = os.path.join(self.download_dir, f"{slugify(url)}.html")
+                content_type = response.headers.get("Content-Type")
+                extension = self._get_extension(content_type)
+
+                file_name = os.path.join(
+                    self.download_dir, f"{slugify(url)}{extension}"
+                )
 
                 with open(file_name, "w", encoding="utf-8") as file:
                     file.write(response.text)
@@ -112,7 +134,7 @@ def main(args):
 
 
 def get_args():
-    parser = argparse.ArgumentParser(description="Download HTML files from DergiPark")
+    parser = argparse.ArgumentParser(description="Download files from an url list")
     parser.add_argument(
         "-p",
         "--proxy",
