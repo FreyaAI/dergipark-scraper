@@ -63,7 +63,7 @@ def parse_args():
         "--folder_name",
         type=str,
         required=True,
-        help="The name of the folder that contains the files.",
+        help="The name of the remote folder that contains the files.",
     )
     parser.add_argument(
         "-l",
